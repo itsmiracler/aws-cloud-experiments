@@ -41,8 +41,8 @@ Step 3: Install Streamlit. Clone repo. Add path to API. Run app.
 ```
 pip install streamlit
 clone https://github.com/itsmiracler/aws-cloud-experiments
-export PYTHONPATH="$HOME/WhereYouClonedRepo/cloud-experiments"
-streamlit run cloud-experiments/experiments/data-apps/open_data_explorer/s3_app.py
+export PYTHONPATH="$HOME/WhereYouClonedRepo/aws-cloud-experiments"
+streamlit run aws-cloud-experiments/experiments/data-apps/open_data_explorer/s3_app.py
 ```
 
 
@@ -50,7 +50,7 @@ streamlit run cloud-experiments/experiments/data-apps/open_data_explorer/s3_app.
 
 Apps and API for exploring open data sources including [AWS Registry of Open Data](https://registry.opendata.aws/) which lists datasets for genomics, satellite, transport, COVID, medical imaging, and other use cases in data for social good.
 
-[![](https://github.com/itsmiracler/aws-cloud-experiments/blob/master/experiments/data-apps/open_data_explorer/s3-app-start.png)](https://github.com/aws-samples/cloud-experiments/tree/master/experiments/data-apps/open_data_explorer)
+[![](https://github.com/itsmiracler/aws-cloud-experiments/blob/master/experiments/data-apps/open_data_explorer/s3-app-start.png)](https://github.com/itsmiracler/aws-cloud-experiments/tree/master/experiments/data-apps/open_data_explorer)
 
 ## [COVID EDA and Models](https://github.com/itsmiracler/aws-cloud-experiments/tree/master/experiments/data-apps/covid_insights)
 
