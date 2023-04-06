@@ -6,7 +6,7 @@ Cloud experiments follow step-by-step workflow for performing analytics, machine
 
 **Documentation:** [Why Cloud Experiments](https://github.com/itsmiracler/aws-cloud-experiments/tree/master/docs/why-cloud-experiments.md) | [What Are Cloud Experiments](https://github.com/itsmiracler/aws-cloud-experiments/tree/master/docs/what-are-cloud-experiments.md)
 
-**Cloud Experiments:** [Guides](https://github.com/itsmiracler/cloud-experiments#guides) | [Exploratory Data Apps](https://github.com/itsmiracler/cloud-experiments#exploratory-data-apps) | [Notebooks](https://github.com/itsmiracler/cloud-experiments#notebooks)
+**Cloud Experiments:** [Guides](https://github.com/itsmiracler/aws-cloud-experiments#guides) | [Exploratory Data Apps](https://github.com/itsmiracler/aws-cloud-experiments#exploratory-data-apps) | [Notebooks](https://github.com/itsmiracler/aws-cloud-experiments#notebooks)
 
 [![](cloud-experiments.png)](https://github.com/itsmiracler/aws-cloud-experiments)
 
