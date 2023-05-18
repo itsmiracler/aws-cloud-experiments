@@ -1,0 +1,117 @@
+import json
+import boto3
+import os
+import csv
+import time
+
+def get_job_results(client, job_id):
+    pages = []
+    response = client.get_document_text_detection(JobId=job_id)
+    pages.append(response)
+
+    next_token = response.get('NextToken')
+
+    while next_token:
+        response = client.get_document_text_detection(JobId=job_id, NextToken=next_token)
+        pages.append(response)
+        next_token = response.get('NextToken')
+
+    return pages
+
+def process_response(response):
+    page_lines = {}
+
+    for page in response:
+        for item in page["Blocks"]:
+            if item["BlockType"] == "LINE":
+                page_number = item["Page"]
+
+                if page_number not in page_lines:
+                    page_lines[page_number] = {
+                        'order_id': 'NA',
+                        'details': 'NA',
+                        'note_issues_found': 'NA',
+                        'hours': 'NA',
+                        'date': 'NA',
+                        'worker': 'NA'
+                    }
+                    is_note_issues_section = False
+                    is_forecast_hours_section = False
+                else:
+                    etext = item["Text"]
+
+                    if "Lines for" in etext:
+                        temp = etext.replace('Lines for ', '').split(' - ')
+                        page_lines[page_number]['order_id'] = temp[0]
+                        page_lines[page_number]['details'] = temp[1]
+
+                    if "Faults" in etext or "CLOSED" in etext:
+                        is_note_issues_section = False
+
+                    if "NOTE ISSUES FOUND" in etext:
+                        is_note_issues_section = True
+                        page_lines[page_number]['note_issues_found'] = 'NA'
+                    elif is_note_issues_section:
+                        page_lines[page_number]['note_issues_found'] += etext
+
+                    if "Date" in etext:
+                        is_forecast_hours_section = True
+
+                    if is_forecast_hours_section:
+                        box = item['Geometry']['BoundingBox']
+
+                        if etext.count("-") == 2 or etext.count("/") == 2:
+                            page_lines[page_number]['date'] = etext
+
+                        if 0.35 < box['Left'] < 0.5:
+                            page_lines[page_number]['worker'] = etext
+
+                        if is_float(etext):
+                            page_lines[page_number]['hours'] = etext
+
+    return page_lines
+
+def is_float(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+def lambda_handler(event, context):
+    notification_message = json.loads(event['Records'][0]['Sns']['Message'])
+    pdf_text_extraction_job_id = notification_message['JobId']
+    pdf_text_extraction_document_location = notification_message['DocumentLocation']
+    
+    pdf_text_extraction_s3_object_name = pdf_text_extraction_document_location['S3ObjectName']
+    pdf_text_extraction_s3_bucket = pdf_text_extraction_document_location['S3Bucket']
+    
+    output_text_file_name = os.path.splitext(pdf_text_extraction_s3_object_name)[0] + '.csv'
+    lambda_local_tmp_file = f'/tmp/{output_text_file_name}'
+    
+    s3_bucket_name = 'textract-main-bucket'
+    region = "us-east-1"
+
+    client = boto3.client('textract', region_name=region)
+    s3 = boto3.client('s3')
+
+    response = get_job_results(client, pdf_text_extraction_job_id) 
+    page_lines = process_response(response)  
+
+    with open(lambda_local_tmp_file, 'a') as f:
+        writer = csv.writer(f, delimiter=',') 
+        writer.writerow(["No", "Order Id", "Details", "Date", "Worker", "Hours", "Issues"])
+        
+        for key in page_lines:
+            line = page_lines[key]
+            writer.writerow([
+                key,
+                line['order_id'],
+                line['details'],
+                line['date'],
+                line['worker'],
+                line['hours'],
+                line['note_issues_found']
+            ])
+
+    s3.upload_file(lambda_local_tmp_file, s3_bucket_name, output_text_file_name)
